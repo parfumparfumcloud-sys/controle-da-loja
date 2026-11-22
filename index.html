@@ -129,6 +129,16 @@ details.sqlbox pre{background:#14201a;color:#cfe8d8;border-radius:10px;padding:1
 .progress{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-top:6px}
 .progress i{display:block;height:100%;background:var(--brand)}
 .rank-num{font-family:"IBM Plex Mono";font-weight:600;color:var(--amber);min-width:2ch}
+/* ---------- foto do estoque ---------- */
+.estoque-thumb{width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--line);flex:none;background:var(--surface2);cursor:pointer}
+.estoque-thumb-empty{width:56px;height:56px;border-radius:10px;border:1.5px dashed var(--line);display:grid;place-items:center;color:var(--ink2);font-size:.68rem;line-height:1.2;text-align:center;background:var(--surface2);flex:none;padding:4px;cursor:pointer;font-weight:700}
+.estoque-head{display:flex;gap:12px;align-items:flex-start}
+.estoque-head .grow{flex:1;min-width:0}
+.foto-preview{width:100%;max-height:220px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:var(--surface2);margin-top:8px;display:block}
+.foto-input{padding:.5rem .6rem}
+.conferir-foto{width:100%;max-height:360px;object-fit:contain;border-radius:12px;background:var(--surface2);border:1px solid var(--line);display:block}
+.conferir-foto-empty{border:1.5px dashed var(--line);border-radius:12px;padding:28px 16px;text-align:center;color:var(--ink2);background:var(--surface2)}
+.conferir-foto-empty b{color:var(--ink);display:block;margin-bottom:.25rem}
 /* ---------- modal / toast ---------- */
 .modal-back{position:fixed;inset:0;background:rgba(10,18,13,.55);display:none;place-items:end center;z-index:60;padding:0}
 .modal-back.open{display:grid}
@@ -139,6 +149,28 @@ details.sqlbox pre{background:#14201a;color:#cfe8d8;border-radius:10px;padding:1
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 [hidden]{display:none !important}
 .foot{color:var(--ink2);font-size:.83rem;text-align:center;margin-top:26px}
+/* ---------- recibo ---------- */
+.recibo-modal{max-width:480px}
+.recibo{background:#ffffff;color:#17211b;border:1px solid #d9e0da;border-radius:10px;padding:22px 20px;font-size:.93rem}
+.recibo-head{text-align:center;border-bottom:2px dashed #c9d2ca;padding-bottom:12px;margin-bottom:12px}
+.recibo-head .r-loja{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.25rem;line-height:1.2}
+.recibo-head .r-sub{color:#4c5a51;font-size:.83rem}
+.recibo-head .r-title{font-family:"Archivo",sans-serif;font-weight:800;letter-spacing:.14em;font-size:.85rem;margin-top:8px}
+.recibo-row{display:flex;justify-content:space-between;gap:16px;padding:.28rem 0}
+.recibo-row .k{color:#4c5a51;flex:none}
+.recibo-row .v{text-align:right;font-weight:600;word-break:break-word}
+.recibo-sep{border-top:1.5px dashed #c9d2ca;margin:10px 0}
+.recibo-total{display:flex;justify-content:space-between;align-items:baseline;font-family:"Archivo",sans-serif;font-weight:800;font-size:1.25rem;padding-top:4px}
+.recibo-prod{font-weight:700;font-size:1.02rem}
+.recibo-foot{text-align:center;color:#4c5a51;font-size:.82rem;margin-top:12px;border-top:2px dashed #c9d2ca;padding-top:12px}
+@media print{
+  #authView,#appView,#concluirBack,#setupBack,#confirmBack,#conferirBack,#toast{display:none !important}
+  #reciboBack.open{position:static !important;display:block !important;background:#ffffff !important;padding:0 !important}
+  #reciboBack .modal{box-shadow:none !important;max-width:100% !important;max-height:none !important;overflow:visible !important;border-radius:0 !important;padding:0 !important;background:#ffffff !important}
+  #reciboBack .recibo{border:none !important;border-radius:0 !important}
+  .recibo-actions{display:none !important}
+  @page{margin:12mm}
+}
 </style>
 </head>
 <body>
@@ -163,8 +195,8 @@ details.sqlbox pre{background:#14201a;color:#cfe8d8;border-radius:10px;padding:1
         <button id="segLogin" class="on" type="button">Entrar</button>
         <button id="segSignup" type="button">Criar conta da loja</button>
       </div>
-      <div id="authErr" class="auth-err" role="alert"></div>
-      <div id="authOk" class="auth-ok" role="status"></div>
+      <div id="authErr" class="auth-err"></div>
+      <div id="authOk" class="auth-ok"></div>
 
       <form id="loginForm">
         <h2>Entrar na sua loja</h2>
@@ -185,16 +217,6 @@ details.sqlbox pre{background:#14201a;color:#cfe8d8;border-radius:10px;padding:1
         <button class="btn primary" type="submit" id="signupBtn">Criar conta e começar</button>
         <p class="auth-note">Ao criar, sua loja começa com todas as tabelas vazias.</p>
       </form>
-      <form id="recoveryForm" hidden>
-        <h2>Definir nova senha</h2>
-        <p class="sub">Escolha a nova senha da sua loja.</p>
-        <div class="fgroup"><label for="recoveryPass">Nova senha (mínimo 6 caracteres)</label><input id="recoveryPass" type="password" autocomplete="new-password" minlength="6" required /></div>
-        <div class="fgroup"><label for="recoveryPass2">Confirmar nova senha</label><input id="recoveryPass2" type="password" autocomplete="new-password" minlength="6" required /></div>
-        <button class="btn primary" id="recoveryBtn" type="submit">Salvar nova senha</button>
-      </form>
-      <p class="auth-note" id="browserHint">Abra este HTML em um navegador atualizado, não na prévia do WhatsApp. É preciso estar conectado à internet.</p>
-      <button class="btn small" id="connectionBtn" type="button" style="width:100%">Testar conexão com o Supabase</button>
-      <p class="hint" id="connectionResult" role="status" style="overflow-wrap:anywhere"></p>
       <p class="auth-note" style="margin-top:1.2rem"><button class="btn small ghost" id="setupBtnAuth" type="button">Banco de dados (SQL de configuração)</button></p>
     </div>
   </div>
@@ -246,11 +268,35 @@ details.sqlbox pre{background:#14201a;color:#cfe8d8;border-radius:10px;padding:1
   </div>
 </div>
 
+<!-- recibo da venda -->
+<div class="modal-back" id="reciboBack">
+  <div class="modal recibo-modal">
+    <div id="reciboContent"></div>
+    <div class="form-actions recibo-actions">
+      <button class="btn primary" type="button" id="reciboPrintBtn">Imprimir</button>
+      <button class="btn" type="button" id="reciboCloseBtn">Fechar</button>
+    </div>
+    <p class="hint recibo-actions" style="margin-top:8px">Na janela de impressão do navegador você também pode salvar o recibo como PDF.</p>
+  </div>
+</div>
+
+<!-- conferir / foto do item do estoque -->
+<div class="modal-back" id="conferirBack">
+  <div class="modal">
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">
+      <h2 id="conferirTitle" style="flex:1">Conferir item</h2>
+      <button class="btn small" type="button" id="conferirClose">✕ Fechar</button>
+    </div>
+    <div id="conferirContent"></div>
+  </div>
+</div>
+
 <!-- setup / sql -->
 <div class="modal-back" id="setupBack">
   <div class="modal" style="max-width:680px">
     <h2>Banco de dados da versão pública</h2>
     <p class="hint">As tabelas públicas (uma linha por loja, isoladas pelo login) precisam existir uma única vez no projeto Supabase <code>parfumparfumcloud-sys</code>. Se as abas mostrarem o aviso de configuração, o dono do projeto roda o SQL abaixo uma vez no <b>SQL Editor</b> do Supabase e depois clica em Atualizar. Cada loja continua vendo só os próprios dados, porque as regras (RLS) amarram cada linha ao usuário logado.</p>
+    <p class="hint" style="margin-top:8px"><b>Foto do estoque:</b> esta versão guarda a foto do item na coluna <code>foto</code> de <code>loja_estoque_itens</code>. Quem já tinha criado as tabelas roda o mesmo SQL de novo — ele só adiciona essa coluna (<code>add column if not exists</code>), sem apagar nenhum dado.</p>
     <details class="sqlbox" open><summary style="font-weight:700;cursor:pointer;padding:.4rem 0">SQL de criação — tabelas públicas por loja</summary><pre id="setupSql"></pre></details>
     <div class="form-actions">
       <button class="btn primary" id="copySqlBtn" type="button">Copiar SQL</button>
@@ -289,53 +335,29 @@ function _loadSession(){ if(_session) return _session; try{ var raw=localStorage
 function _notifyAuth(ev){ _authCbs.forEach(function(cb){ try{ cb(ev,_session); }catch(e){} }); }
 function _sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
 async function _fetchRetry(url, opts){
-  // Never replay a signup or a sale after a lost response.
-  var tries=opts.method==="GET"?2:1;
+  var tries=3, lastErr=null;
   for(var i=0;i<tries;i++){
-    var controller=new AbortController();
-    var timer=setTimeout(function(){ controller.abort(); },18000);
-    try{
-      return await fetch(url, Object.assign({},opts,{signal:controller.signal,
-        mode:"cors",credentials:"omit",cache:"no-store",referrerPolicy:"no-referrer"}));
-    }catch(e){
-      if(i===tries-1){
-        var err=new Error(e.name==="AbortError"?"O servidor demorou a responder.":"Não foi possível alcançar o Supabase neste navegador.");
-        err.code="NETWORK_ERROR"; throw err;
-      }
-      await _sleep(500);
-    }finally{clearTimeout(timer);}
+    try{ return await fetch(url, opts); }
+    catch(e){ lastErr=e; if(i<tries-1) await _sleep(700*(i+1)); }
   }
+  throw new Error("Falha de rede ao falar com o servidor. Verifique sua internet e tente de novo.");
 }
 async function _api(path, opts){
   opts=opts||{};
-  var headers={apikey:SUPABASE_KEY,"Content-Type":"application/json"};
-  // Publishable keys identify the app, not a signed-in user.
-  if(opts.auth) await sbAuth.getSession();
+  var headers={ "apikey":SUPABASE_KEY, "Content-Type":"application/json" };
   var sess=_loadSession();
-  if(opts.auth && sess && sess.access_token) headers.Authorization="Bearer "+sess.access_token;
+  headers["Authorization"]="Bearer "+((opts.auth && sess && sess.access_token)?sess.access_token:SUPABASE_KEY);
   if(opts.headers) for(var k in opts.headers) headers[k]=opts.headers[k];
-  var res=await _fetchRetry(SUPABASE_URL+path,{method:opts.method||"GET",headers:headers,
-    body:opts.body!==undefined?JSON.stringify(opts.body):undefined});
-  var text=await res.text(),data=null;
-  if(text){try{data=JSON.parse(text);}catch(e){
-    var malformed=new Error("O servidor retornou uma resposta inválida (HTTP "+res.status+").");
-    malformed.status=res.status;return {data:null,error:malformed};
-  }}
+  var res=await _fetchRetry(SUPABASE_URL+path,{ method:opts.method||"GET", headers:headers, body:opts.body?JSON.stringify(opts.body):undefined });
+  var text=await res.text(); var data=null;
+  if(text){ try{ data=JSON.parse(text); }catch(e){ data=null; } }
   if(!res.ok){
-    var msg=(data&&(data.message||data.msg||data.error_description||data.error))||("Erro HTTP "+res.status);
-    var err=new Error(typeof msg==="string"?msg:JSON.stringify(msg));
-    err.status=res.status;err.code=(data&&(data.error_code||data.code))||null;
-    return {data:null,error:err};
+    var msg=(data&&(data.message||data.msg||data.error_description||data.error))||("Erro "+res.status);
+    var err=new Error(msg); err.status=res.status; err.code=(data&&data.code)||null;
+    return { data:null, error:err };
   }
-  return {data:data,error:null};
+  return { data:data, error:null };
 }
-function authReturnURL(){
-  // file:// is usable for password sign-in, but is not a public email callback.
-  if(location.protocol!=="https:" && location.protocol!=="http:") return "";
-  return location.origin+location.pathname;
-}
-function authPath(path){var back=authReturnURL();return path+(back?"?redirect_to="+encodeURIComponent(back):"");}
-
 function _setSessionFromAuth(data){
   if(data && data.access_token){
     var s={ access_token:data.access_token, refresh_token:data.refresh_token||null, expires_at:Date.now()+((data.expires_in||3600)*1000), user:data.user||null };
@@ -345,10 +367,10 @@ function _setSessionFromAuth(data){
 }
 var sbAuth={
   signUp: async function(creds){
-    var r=await _api(authPath("/auth/v1/signup"),{ method:"POST", body:{ email:creds.email, password:creds.password, data:(creds.options&&creds.options.data)||{} } });
+    var r=await _api("/auth/v1/signup",{ method:"POST", body:{ email:creds.email, password:creds.password, data:(creds.options&&creds.options.data)||{} } });
     if(r.error) return { data:{ user:null, session:null }, error:r.error };
     var session=_setSessionFromAuth(r.data);
-    return { data:{ user:(r.data&&r.data.user)||(r.data&&r.data.id?r.data:null)||(session&&session.user)||null, session:session }, error:null };
+    return { data:{ user:(r.data&&r.data.user)||(session&&session.user)||null, session:session }, error:null };
   },
   signInWithPassword: async function(creds){
     var r=await _api("/auth/v1/token?grant_type=password",{ method:"POST", body:{ email:creds.email, password:creds.password } });
@@ -358,7 +380,7 @@ var sbAuth={
     return { data:{ user:r.data.user, session:session }, error:null };
   },
   resetPasswordForEmail: async function(email){
-    var r=await _api(authPath("/auth/v1/recover"),{ method:"POST", body:{ email:email } });
+    var r=await _api("/auth/v1/recover",{ method:"POST", body:{ email:email } });
     return { data:{}, error:r.error };
   },
   signOut: async function(){
@@ -438,7 +460,7 @@ create table if not exists public.loja_estoque_itens (
   loja_id uuid not null references public.lojas(id) on delete cascade,
   codigo text not null, nome text not null, descricao text default '',
   detalhes text default '', preco_centavos integer not null default 0,
-  quantidade integer not null default 0,
+  quantidade integer not null default 0, foto text default '',
   created_at timestamptz not null default now(),
   unique (loja_id, codigo)
 );
@@ -511,6 +533,9 @@ create table if not exists public.loja_vendas (
   observacao text default '', caixa_id bigint, crediario_id bigint,
   created_at timestamptz not null default now()
 );
+
+-- Foto do item do estoque: para bancos ja criados, adiciona a coluna sem apagar nada.
+alter table public.loja_estoque_itens add column if not exists foto text default '';
 
 create index if not exists idx_pub_clientes_loja on public.loja_clientes(loja_id);
 create index if not exists idx_pub_estoque_loja on public.loja_estoque_itens(loja_id);
@@ -596,6 +621,45 @@ function statusPill(s){
   var map={pendente:["amber","Pendente"],concluida:["green","Concluída"],entregue:["blue","Entregue"],cancelada:["red","Cancelada"],confirmada:["blue","Confirmada"],chegou:["green","Chegou"]};
   var m=map[s]||["gray",s]; return '<span class="pill '+m[0]+'">'+esc(m[1])+'</span>';
 }
+/* ---------- FOTO DO ESTOQUE ---------- */
+var _novaFotoData = "";
+var _conferirId = null;
+function fotoValidaArquivo(file){
+  if(!file) return "Escolha uma foto.";
+  if(!/image\/(jpeg|png|webp)/.test(file.type||"")) return "Use uma foto JPG, PNG ou WebP.";
+  if(file.size > 5*1024*1024) return "A foto tem mais de 5 MB. Escolha uma foto menor.";
+  return "";
+}
+function processarFoto(file){
+  return new Promise(function(resolve, reject){
+    var erro = fotoValidaArquivo(file);
+    if(erro){ reject(new Error(erro)); return; }
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function(){
+      try{
+        var max = 900;
+        var w = img.naturalWidth||img.width, h = img.naturalHeight||img.height;
+        var escala = Math.min(1, max/Math.max(w,h));
+        var cw = Math.max(1, Math.round(w*escala)), ch = Math.max(1, Math.round(h*escala));
+        var canvas = document.createElement("canvas"); canvas.width=cw; canvas.height=ch;
+        var ctx = canvas.getContext("2d"); ctx.drawImage(img,0,0,cw,ch);
+        URL.revokeObjectURL(url);
+        /* JPEG reduz bem o tamanho guardado no Supabase, sem perder a conferencia do frasco */
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      }catch(e){ URL.revokeObjectURL(url); reject(e); }
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("Não foi possível ler essa foto.")); };
+    img.src = url;
+  });
+}
+function erroFotoColuna(err){
+  var m = ((err&&err.message)||"") + " " + ((err&&err.code)||"");
+  return /foto/.test(m) && /(does not exist|column|42703|PGRST204)/i.test(m);
+}
+function avisoFotoColuna(){
+  toast("A foto ainda não salvou: rode o SQL atualizado do botão “Banco de dados” uma vez no Supabase (ele só adiciona a coluna foto, sem apagar nada) e tente de novo.");
+}
 function resumoEnvio(v){
   var loja = state.loja ? state.loja.nome_loja : "Loja";
   var sub = (v.preco_unit_centavos||0)*(v.quantidade||1);
@@ -634,31 +698,44 @@ $("segLogin").onclick=function(){ $("segLogin").classList.add("on"); $("segSignu
 $("segSignup").onclick=function(){ $("segSignup").classList.add("on"); $("segLogin").classList.remove("on"); $("signupForm").hidden=false; $("loginForm").hidden=true; authMsg("",""); };
 
 $("signupForm").addEventListener("submit", async function(ev){
-  ev.preventDefault(); if(!sbReady())return;authMsg("","");
-  var nome=$("suLoja").value.trim(),email=$("suEmail").value.trim(),p1=$("suPass").value,p2=$("suPass2").value;
-  if(!nome){authMsg("err","Informe o nome da loja.");return;}
-  if(p1!==p2){authMsg("err","As senhas não conferem.");return;}
-  var btn=$("signupBtn");btn.disabled=true;btn.textContent="Criando conta…";
-  var created=false;
+  ev.preventDefault(); if(!sbReady()) return; authMsg("","");
+  var nome=$("suLoja").value.trim(), email=$("suEmail").value.trim(), p1=$("suPass").value, p2=$("suPass2").value;
+  if(p1!==p2){ authMsg("err","As senhas não conferem."); return; }
+  var btn=$("signupBtn"); btn.disabled=true; btn.textContent="Criando conta…";
   try{
-    var res=await sb.auth.signUp({email:email,password:p1,options:{data:{nome_loja:nome}}});
-    if(res.error)throw res.error;
-    created=true;
-    $("suPass").value="";$("suPass2").value="";
-    if(res.data.session && res.data.user){
+    var res = await sb.auth.signUp({ email:email, password:p1, options:{ data:{ nome_loja:nome } } });
+    if(res.error) throw res.error;
+    if(res.data.user && res.data.session){
+      var ins = await sb.from("lojas").insert({ id:res.data.user.id, nome_loja:nome, email:email });
+      if(ins.error && !isMissingTable(ins.error)) throw ins.error;
+      if(ins.error) state.setupNeeded=true;
       await enterApp(res.data.user);
-      toast("Conta criada. Sua loja começa vazia.");
-    }else{
-      $("segLogin").click();$("loginEmail").value=email;
-      authMsg("ok","Solicitação recebida. Verifique a caixa de entrada e o spam de "+email+". Se receber a confirmação, abra o link e depois entre com sua senha. Se já tinha conta, use Entrar. Não repita o cadastro enquanto aguarda o e-mail.");
+      toast("Conta criada! Sua loja começa vazia — cadastre o primeiro produto no Estoque.");
+    } else {
+      authMsg("ok","Conta criada! Se o Supabase pedir confirmação, abra o e-mail "+email+", confirme e depois entre em Entrar.");
+      $("segLogin").click();
     }
   }catch(e){
-    if(created)authMsg("err","O cadastro foi aceito, mas não foi possível abrir os dados da loja. Use Entrar. Detalhe: "+traduzErro(e));
-    else if(e.code==="NETWORK_ERROR")authMsg("err",traduzErro(e)+" Não foi possível confirmar se a conta foi criada. Não refaça o cadastro ainda: verifique seu e-mail e tente Entrar. Use o teste de conexão abaixo.");
-    else authMsg("err",traduzErro(e));
-  }finally{btn.disabled=false;btn.textContent="Criar conta e começar";}
+    /* Se a rede falhou no meio do cadastro, a conta pode ter sido criada
+       mesmo assim: tenta entrar com o mesmo e-mail e senha antes de
+       mostrar o erro, para a conta não se perder. */
+    var recuperou=false;
+    if(/Falha de rede|Failed to fetch/i.test((e&&e.message)||"")){
+      try{
+        var li=await sb.auth.signInWithPassword({ email:email, password:p1 });
+        if(!li.error && li.data.user){
+          var ins2=await sb.from("lojas").insert({ id:li.data.user.id, nome_loja:nome, email:email });
+          if(ins2.error && isMissingTable(ins2.error)) state.setupNeeded=true;
+          await enterApp(li.data.user);
+          recuperou=true;
+          toast("Conta criada! Sua loja começa vazia — cadastre o primeiro produto no Estoque.");
+        }
+      }catch(e2){}
+    }
+    if(!recuperou) authMsg("err", traduzErro(e));
+  }
+  btn.disabled=false; btn.textContent="Criar conta e começar";
 });
-
 $("loginForm").addEventListener("submit", async function(ev){
   ev.preventDefault(); if(!sbReady()) return; authMsg("","");
   var btn=$("loginBtn"); btn.disabled=true; btn.textContent="Entrando…";
@@ -670,67 +747,21 @@ $("loginForm").addEventListener("submit", async function(ev){
   btn.disabled=false; btn.textContent="Entrar";
 });
 $("forgotLink").addEventListener("click", async function(ev){
-  ev.preventDefault();var email=$("loginEmail").value.trim();
-  if(!email){authMsg("err","Digite o e-mail da loja acima e tente novamente.");return;}
-  try{
-    var res=await sb.auth.resetPasswordForEmail(email);if(res.error)throw res.error;
-    authMsg("ok","Se houver uma conta para esse e-mail, você receberá as instruções de nova senha. Confira também o spam.");
-  }catch(e){authMsg("err",traduzErro(e));}
+  ev.preventDefault(); if(!sbReady()) return;
+  var email=$("loginEmail").value.trim();
+  if(!email){ authMsg("err","Digite o e-mail da loja acima e toque de novo em “Esqueci minha senha”."); return; }
+  var res = await sb.auth.resetPasswordForEmail(email);
+  if(res.error) authMsg("err", traduzErro(res.error)); else authMsg("ok","Enviamos um e-mail para redefinir a senha de "+email+".");
 });
 function traduzErro(e){
-  var m=(e&&e.message)||"Erro inesperado.",code=(e&&e.code)||"";
-  if(code==="NETWORK_ERROR" || /Failed to fetch|NetworkError|Load failed/i.test(m)) return "Sem resposta do Supabase. Confira a internet, abra no Chrome, Safari, Firefox ou Edge e teste sem bloqueadores de rede. Uma prévia de arquivo ou um site com política de segurança restritiva pode bloquear a conexão.";
-  if(/Invalid login credentials/i.test(m))return "E-mail ou senha incorretos.";
-  if(/already registered/i.test(m))return "Este e-mail já tem conta. Use Entrar.";
-  if(/Email not confirmed/i.test(m))return "Confirme o cadastro no seu e-mail antes de entrar.";
-  if(/signup_disabled/i.test(code))return "Novos cadastros estão desativados no Supabase. O administrador deve habilitá-los em Authentication.";
-  if(/over_email_send_rate_limit|over_request_rate_limit/i.test(code)||e.status===429)return "O Supabase limitou os envios. Aguarde antes de tentar outra vez. O administrador pode verificar os limites e o SMTP.";
-  if(/email_address_not_authorized|email_address_invalid/i.test(code))return "O Supabase recusou este endereço de e-mail. Confira o endereço; o administrador deve verificar as restrições do serviço de e-mail/SMTP.";
-  if(/Error sending confirmation email/i.test(m))return "O Supabase não conseguiu enviar a confirmação. O administrador deve conferir o SMTP e os logs de Auth.";
-  if(/Invalid API key|Invalid JWT/i.test(m))return "O Supabase recusou a configuração de acesso. O administrador deve conferir a URL e a chave pública do projeto. Nunca use chave secreta neste HTML.";
-  if(/Password should be|weak_password/i.test(m+code))return "A senha não atende às regras do projeto. Use uma senha mais longa e siga a política configurada no Supabase.";
-  return m+(e&&e.status?" (HTTP "+e.status+(code?", "+code:"")+")":"");
+  var m=(e&&e.message)||"Erro inesperado.";
+  if(/Invalid login credentials/i.test(m)) return "E-mail ou senha incorretos.";
+  if(/already registered/i.test(m)) return "Este e-mail já tem conta. Use a aba Entrar.";
+  if(/Email not confirmed/i.test(m)) return "Confirme o cadastro no seu e-mail antes de entrar.";
+  if(/Password should be/i.test(m)) return "A senha precisa de pelo menos 6 caracteres.";
+  if(/Failed to fetch|Falha de rede|NetworkError|Load failed/i.test(m)) return "Não foi possível conectar ao servidor (falha de rede). Verifique sua internet e tente de novo — o app tenta reconectar sozinho.";
+  return m;
 }
-$("connectionBtn").onclick=async function(){
-  var btn=this,out=$("connectionResult");btn.disabled=true;out.textContent="Verificando conexão…";
-  try{
-    var r=await _api("/auth/v1/settings");if(r.error)throw r.error;
-    if(!r.data||!r.data.external)throw new Error("Resposta de configuração inesperada.");
-    out.textContent="Conexão OK. "+(r.data.disable_signup?"Novos cadastros estão DESATIVADOS.":"Novos cadastros estão permitidos.")+" "+(!r.data.external.email?"A entrada por e-mail está DESATIVADA.":r.data.mailer_autoconfirm?"Confirmação por e-mail desativada.":"Confirmação por e-mail obrigatória: confira a caixa de entrada e o spam.")+" Este teste não cria conta nem envia e-mail.";
-  }catch(e){out.textContent=traduzErro(e);}
-  finally{btn.disabled=false;}
-};
-$("recoveryForm").addEventListener("submit",async function(ev){
-  ev.preventDefault();authMsg("","");var p=$("recoveryPass").value;
-  if(p!==$("recoveryPass2").value){authMsg("err","As senhas não conferem.");return;}
-  var btn=$("recoveryBtn");btn.disabled=true;
-  try{
-    var r=await _api("/auth/v1/user",{method:"PUT",auth:true,body:{password:p}});if(r.error)throw r.error;
-    $("recoveryPass").value="";$("recoveryPass2").value="";$("recoveryForm").hidden=true;
-    document.querySelector(".seg").hidden=false;await enterApp(r.data);toast("Nova senha salva.");
-  }catch(e){authMsg("err",traduzErro(e));}finally{btn.disabled=false;}
-});
-async function consumeAuthCallback(){
-  var hash=new URLSearchParams(location.hash.slice(1));
-  if(!hash.has("access_token")&&!hash.has("error")&&!hash.has("error_description"))return false;
-  var token=hash.get("access_token"),refresh=hash.get("refresh_token"),type=hash.get("type");
-  // Remove credentials from the visible URL before any API call.
-  try{history.replaceState(null,"",location.pathname+location.search);}catch(e){location.hash="";}
-  if(hash.has("error")||hash.has("error_description")){
-    authMsg("err",hash.get("error_description")||"O link de confirmação expirou ou não é válido.");return true;
-  }
-  _saveSession({access_token:token,refresh_token:refresh,expires_at:Date.now()+Number(hash.get("expires_in")||3600)*1000});
-  try{
-    var r=await _api("/auth/v1/user",{auth:true});if(r.error)throw r.error;
-    _session.user=r.data;_saveSession(_session);
-    if(type==="recovery"){
-      $("loginForm").hidden=true;$("signupForm").hidden=true;document.querySelector(".seg").hidden=true;$("recoveryForm").hidden=false;
-      authMsg("ok","Link validado. Defina sua nova senha abaixo.");
-    }else{await enterApp(r.data);toast("E-mail confirmado.");}
-  }catch(e){_saveSession(null);authMsg("err",traduzErro(e));}
-  return true;
-}
-
 $("logoutBtn").onclick = async function(){ await sb.auth.signOut(); location.reload(); };
 
 async function enterApp(user){
@@ -738,15 +769,13 @@ async function enterApp(user){
   /* perfil da loja */
   var r = await sb.from("lojas").select("*").eq("id", user.id).maybeSingle();
   if(r.error && isMissingTable(r.error)){ state.setupNeeded=true; }
-  else if(r.error){ throw r.error; }
+  else if(r.error){ state.loadError=r.error.message; }
   if(r.data){ state.loja=r.data; }
   else if(!state.setupNeeded){
     var nome=(user.user_metadata&&user.user_metadata.nome_loja)||"";
     if(nome){
       var ins=await sb.from("lojas").insert({ id:user.id, nome_loja:nome, email:user.email||"" });
       if(!ins.error) state.loja={ id:user.id, nome_loja:nome, email:user.email||"" };
-      else if(isMissingTable(ins.error))state.setupNeeded=true;
-      else throw new Error("A conta existe, mas o perfil da loja não foi salvo: "+ins.error.message);
     }
   }
   if(!state.loja && !state.setupNeeded){
@@ -829,7 +858,7 @@ function render(){ renderTabs(); var m=$("main"); var fn={painel:rPainel,cliente
 function renderListOnly(){ render(); var sbx=document.querySelector(".searchbar"); if(sbx){ sbx.focus(); try{ sbx.setSelectionRange(sbx.value.length, sbx.value.length); }catch(e){} } }
 function bindCommon(){
   Array.prototype.forEach.call(document.querySelectorAll("[data-goto]"),function(b){ b.onclick=function(){ state.tab=b.getAttribute("data-goto"); render(); window.scrollTo({top:0}); }; });
-  Array.prototype.forEach.call(document.querySelectorAll("[data-toggle-form]"),function(b){ b.onclick=function(){ var k=b.getAttribute("data-toggle-form"); state.showForm[k]=!state.showForm[k]; render(); }; });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-toggle-form]"),function(b){ b.onclick=function(){ var k=b.getAttribute("data-toggle-form"); state.showForm[k]=!state.showForm[k]; if(k==="estoque" && !state.showForm[k]) _novaFotoData=""; render(); }; });
   Array.prototype.forEach.call(document.querySelectorAll("[data-del]"),function(b){ b.onclick=async function(){ var p=b.getAttribute("data-del").split(":"); if(await del(p[0], parseInt(p[1],10))){ toast("Excluído."); loadAll(); } }; });
   bindDiscountPairs();
 }
@@ -929,7 +958,8 @@ function rEstoque(){
     +'<div><label>Nome do produto *</label><input name="nome" required /></div>'
     +'<div><label>Preço de venda (R$)</label><input name="preco" type="number" step="0.01" min="0" value="0" /></div>'
     +'<div><label>Quantidade inicial</label><input name="qtd" type="number" step="1" min="0" value="1" /></div>'
-    +'<div class="wide"><label>Descrição / detalhes</label><input name="descricao" placeholder="Marca, tamanho, notas…" /></div></div>'
+    +'<div class="wide"><label>Descrição / detalhes</label><input name="descricao" placeholder="Marca, tamanho, notas…" /></div>'
+    +'<div class="wide"><label>Foto do produto</label><input class="foto-input" id="fEstFoto" name="foto" type="file" accept="image/jpeg,image/png,image/webp" /><p class="hint" style="margin-top:6px">JPG, PNG ou WebP, até 5 MB. A foto aparece no item do estoque e na conferência.</p><div id="fEstFotoPreviewWrap">'+(_novaFotoData?'<img class="foto-preview" src="'+_novaFotoData+'" alt="Foto do produto escolhida" /><p class="hint" style="margin-top:6px">Foto pronta — ela será salva junto com o item.</p>':"")+'</div><button class="btn small" type="button" id="fEstFotoRemove"'+(_novaFotoData?"":" hidden")+'>Remover foto</button></div></div>'
     +'<p class="hint" style="margin-top:8px">O código é gerado automaticamente (próximo: <b class="mono">'+nextCode()+'</b>) e controla a entrada e a saída.</p>'
     +'<div class="form-actions"><button class="btn primary" type="submit">Salvar item</button><button class="btn" type="button" data-toggle-form="estoque">Cancelar</button></div></form>' : "";
   var movForm = state.showForm.mov ? '<form class="form-panel" id="fMov"><div class="form-grid">'
@@ -940,22 +970,41 @@ function rEstoque(){
     +'<div class="wide"><label>Descrição</label><input name="descricao" placeholder="Compra, venda, ajuste…" /></div></div>'
     +'<div class="form-actions"><button class="btn primary" type="submit">Lançar movimentação</button><button class="btn" type="button" data-toggle-form="mov">Cancelar</button></div></form>' : "";
   var rows = list.length ? '<div class="rows">'+list.map(function(i){
-    return '<div class="row-card"><div class="top"><span class="pill gray mono">cód. '+esc(i.codigo)+'</span><span class="title">'+esc(i.nome)+'</span><span class="val">'+brl(i.preco_centavos)+'</span></div>'
-    +'<div class="meta">Em estoque: <b>'+(i.quantidade||0)+' un.</b>'+(i.descricao?" • "+esc(i.descricao):"")+'</div>'
-    +'<div class="actions"><button class="btn small" data-mov-rapida="entrada:'+i.codigo+'">+ Entrada</button><button class="btn small" data-mov-rapida="saida:'+i.codigo+'">− Saída</button><button class="btn small danger" data-del="loja_estoque_itens:'+i.id+'">Excluir</button></div></div>';
+    var thumb = i.foto ? '<img class="estoque-thumb" src="'+i.foto+'" alt="Foto de '+esc(i.nome)+'" data-conferir="'+i.id+'" />' : '<button class="estoque-thumb-empty" type="button" data-conferir="'+i.id+'" aria-label="Adicionar foto de '+esc(i.nome)+'">Sem<br/>foto</button>';
+    return '<div class="row-card"><div class="estoque-head">'+thumb+'<div class="grow"><div class="top"><span class="pill gray mono">cód. '+esc(i.codigo)+'</span><span class="title">'+esc(i.nome)+'</span><span class="val">'+brl(i.preco_centavos)+'</span></div>'
+    +'<div class="meta">Em estoque: <b>'+(i.quantidade||0)+' un.</b>'+(i.descricao?" • "+esc(i.descricao):"")+'</div></div></div>'
+    +'<div class="actions"><button class="btn small primary" data-conferir="'+i.id+'">Conferir / Foto</button><button class="btn small" data-mov-rapida="entrada:'+i.codigo+'">+ Entrada</button><button class="btn small" data-mov-rapida="saida:'+i.codigo+'">− Saída</button><button class="btn small danger" data-del="loja_estoque_itens:'+i.id+'">Excluir</button></div></div>';
   }).join("")+'</div>' : '<div class="empty"><b>Estoque vazio</b>Cadastre o primeiro produto — ele recebe um código automático para controlar entrada e saída.</div>';
   var movs = state.movs.slice(0,15);
   var movHtml = movs.length ? '<div class="rows" style="margin-top:12px">'+movs.map(function(m){
     return '<div class="row-card"><div class="top"><span class="pill '+(m.tipo==="entrada"?"green":"red")+'">'+(m.tipo==="entrada"?"Entrada":"Saída")+'</span><span class="title mono">cód. '+esc(m.codigo)+'</span><span class="meta">'+m.quantidade+' un. • '+fmtDate(m.data)+'</span></div>'+(m.descricao?'<div class="meta">'+esc(m.descricao)+'</div>':"")+'</div>';
   }).join("")+'</div>' : '<p class="hint">Nenhuma movimentação ainda.</p>';
   setTimeout(function(){
-    var f=$("fEstoque"); if(f) f.addEventListener("submit", async function(ev){ ev.preventDefault(); var fd=new FormData(f);
-      var codigo=nextCode(); var qtd=parseInt(fd.get("qtd"),10)||0;
-      var row=await ins("loja_estoque_itens",{codigo:codigo,nome:fd.get("nome"),descricao:fd.get("descricao")||"",preco_centavos:cents(fd.get("preco")),quantidade:qtd});
-      if(row){ if(qtd>0) await ins("loja_estoque_movimentacoes",{item_id:row.id,codigo:codigo,tipo:"entrada",quantidade:qtd,data:today(),descricao:"Estoque inicial"});
-        state.showForm.estoque=false; toast("Item "+codigo+" cadastrado."); loadAll(); } });
+    var f=$("fEstoque");
+    if(f){
+      var fotoInp=$("fEstFoto");
+      if(fotoInp) fotoInp.addEventListener("change", async function(){
+        var file=fotoInp.files&&fotoInp.files[0]; if(!file) return;
+        try{ _novaFotoData=await processarFoto(file); var w=$("fEstFotoPreviewWrap"); if(w) w.innerHTML='<img class="foto-preview" src="'+_novaFotoData+'" alt="Foto do produto escolhida" /><p class="hint" style="margin-top:6px">Foto pronta — ela será salva junto com o item.</p>'; var rb=$("fEstFotoRemove"); if(rb) rb.hidden=false; }
+        catch(e){ toast((e&&e.message)||"Não foi possível usar essa foto."); fotoInp.value=""; }
+      });
+      var fotoRem=$("fEstFotoRemove");
+      if(fotoRem) fotoRem.onclick=function(){ _novaFotoData=""; if(fotoInp) fotoInp.value=""; var w=$("fEstFotoPreviewWrap"); if(w) w.innerHTML=""; fotoRem.hidden=true; };
+      f.addEventListener("submit", async function(ev){ ev.preventDefault(); var fd=new FormData(f);
+        var codigo=nextCode(); var qtd=parseInt(fd.get("qtd"),10)||0;
+        var payload={codigo:codigo,nome:fd.get("nome"),descricao:fd.get("descricao")||"",preco_centavos:cents(fd.get("preco")),quantidade:qtd,foto:_novaFotoData||"",loja_id:state.user.id};
+        var r=await sb.from("loja_estoque_itens").insert(payload).select().single();
+        var row=null; var fotoFalhou=false;
+        if(r.error){
+          if(_novaFotoData && erroFotoColuna(r.error)){ delete payload.foto; var r2=await sb.from("loja_estoque_itens").insert(payload).select().single(); if(r2.error){ toast("Erro: "+r2.error.message); return; } row=r2.data; fotoFalhou=true; }
+          else { toast("Erro: "+r.error.message); return; }
+        } else row=r.data;
+        if(row){ if(qtd>0) await ins("loja_estoque_movimentacoes",{item_id:row.id,codigo:codigo,tipo:"entrada",quantidade:qtd,data:today(),descricao:"Estoque inicial"});
+          _novaFotoData=""; state.showForm.estoque=false; toast(fotoFalhou ? "Item "+codigo+" cadastrado, mas a foto não salvou — rode o SQL atualizado do botão Banco de dados e envie a foto pelo Conferir / Foto." : "Item "+codigo+" cadastrado."); loadAll(); } });
+    }
     var mf=$("fMov"); if(mf) mf.addEventListener("submit", async function(ev){ ev.preventDefault(); var fd=new FormData(mf); await lancarMov(fd.get("codigo"), fd.get("tipo"), parseInt(fd.get("qtd"),10)||1, fd.get("data"), fd.get("descricao")); });
     Array.prototype.forEach.call(document.querySelectorAll("[data-mov-rapida]"),function(b){ b.onclick=function(){ var p=b.getAttribute("data-mov-rapida").split(":"); lancarMov(p[1], p[0], 1, today(), p[0]==="entrada"?"Entrada rápida":"Saída rápida"); }; });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-conferir]"),function(b){ b.onclick=function(){ abrirConferir(parseInt(b.getAttribute("data-conferir"),10)); }; });
   },0);
   return '<section class="panel"><div class="panel-head"><h2>Estoque</h2>'+searchBox("estoque","Buscar por nome ou código…")+'<div class="sp"></div><button class="btn small" data-toggle-form="mov">Entrada / Saída</button><button class="btn primary small" data-toggle-form="estoque">+ Novo item</button></div>'+form+movForm+rows+'</section>'
     + '<section class="panel"><div class="panel-head"><h2>Últimas movimentações</h2></div>'+movHtml+'</section>';
@@ -970,6 +1019,47 @@ async function lancarMov(codigo, tipo, qtd, data, descricao){
   if(!ok) return;
   await ins("loja_estoque_movimentacoes",{item_id:item.id,codigo:codigo,tipo:tipo,quantidade:qtd,data:data||today(),descricao:descricao||""});
   state.showForm.mov=false; toast((tipo==="entrada"?"Entrada":"Saída")+" lançada no cód. "+codigo+"."); loadAll();
+}
+/* ---------- CONFERIR / FOTO DO ITEM ---------- */
+function conferirHTML(item){
+  var fotoHtml = item.foto
+    ? '<img class="conferir-foto" src="'+item.foto+'" alt="Foto de '+esc(item.nome)+'" />'
+    : '<div class="conferir-foto-empty"><b>Sem foto ainda</b>Envie a foto do frasco abaixo para conferir o item exato na hora da venda ou da chegada da compra.</div>';
+  var desc = item.descricao || item.detalhes || "";
+  return fotoHtml
+    + '<div style="display:flex;gap:12px;align-items:flex-start;margin-top:14px;flex-wrap:wrap"><div style="flex:1;min-width:180px"><h3 style="font-size:1.25rem;font-weight:800">'+esc(item.nome)+'</h3><div class="meta" style="color:var(--ink2);font-size:.9rem">Código '+esc(item.codigo)+' • '+(item.quantidade||0)+' un. em estoque</div></div><div style="text-align:right"><div style="font-family:Archivo;font-weight:800;font-size:1.2rem">'+brl(item.preco_centavos)+'</div><div class="hint">Preço de venda</div></div></div>'
+    + (desc ? '<div style="margin-top:12px"><b>Descrição e detalhes</b><p style="margin:.35rem 0 0;color:var(--ink2)">'+esc(desc)+'</p></div>' : '<p class="hint" style="margin-top:12px">Sem descrição cadastrada para este item.</p>')
+    + '<div style="border-top:1px solid var(--line);margin-top:16px;padding-top:14px"><b>Foto real do frasco</b><p class="hint" style="margin:.3rem 0 8px">A foto enviada substitui a anterior e aparece no item do estoque. JPG, PNG ou WebP, até 5 MB — ao escolher, ela salva na hora.</p>'
+    + '<label for="conferirFotoInput">Enviar / trocar foto</label><input class="foto-input" id="conferirFotoInput" type="file" accept="image/jpeg,image/png,image/webp" />'
+    + '<div class="form-actions">'+(item.foto?'<button class="btn danger" type="button" id="conferirFotoRemove">Remover foto</button>':"")+'<button class="btn" type="button" id="conferirFechar2">Fechar</button></div>'
+    + '<p class="hint" style="margin-top:8px">Confira frasco, nome e código antes de dar entrada ou saída — é este item que entra no controle pelo código '+esc(item.codigo)+'.</p></div>';
+}
+function abrirConferir(id){
+  var item=state.estoque.filter(function(i){return i.id===id;})[0]; if(!item) return;
+  _conferirId=id;
+  $("conferirTitle").textContent="Conferir — Cód. "+item.codigo;
+  $("conferirContent").innerHTML=conferirHTML(item);
+  $("conferirBack").classList.add("open");
+  var inp=$("conferirFotoInput");
+  if(inp) inp.addEventListener("change", async function(){
+    var file=inp.files&&inp.files[0]; if(!file) return;
+    try{
+      var dataUrl=await processarFoto(file);
+      var r=await sb.from("loja_estoque_itens").update({foto:dataUrl}).eq("id",item.id).eq("loja_id",state.user.id);
+      if(r.error){ if(erroFotoColuna(r.error)) avisoFotoColuna(); else toast("Erro: "+r.error.message); return; }
+      item.foto=dataUrl;
+      toast("Foto salva no cód. "+item.codigo+".");
+      render(); abrirConferir(item.id);
+    }catch(e){ toast((e&&e.message)||"Não foi possível usar essa foto."); }
+  });
+  var rem=$("conferirFotoRemove");
+  if(rem) rem.onclick=async function(){
+    if(!(await showConfirm("Remover a foto deste item?"))) return;
+    var ok=await upd("loja_estoque_itens", item.id, {foto:""});
+    if(!ok) return;
+    item.foto=""; toast("Foto removida."); render(); abrirConferir(item.id);
+  };
+  var f2=$("conferirFechar2"); if(f2) f2.onclick=function(){ $("conferirBack").classList.remove("open"); };
 }
 
 /* ---------- CAIXA ---------- */
@@ -1149,7 +1239,7 @@ function bindVendaForm(prefix, modo){
     } else {
       base.status="concluida"; base.valor_pago_centavos=cents(fd.get("pago"));
       var row2=await ins("loja_vendas", base);
-      if(row2){ await aplicarEfeitosVenda(row2, base.valor_pago_centavos); state.showForm[prefix]=false; toast("Venda registrada com baixa no estoque."); loadAll(); }
+      if(row2){ await aplicarEfeitosVenda(row2, base.valor_pago_centavos); state.showForm[prefix]=false; toast("Venda registrada com baixa no estoque."); await loadAll(); var vFinal2=state.vendas.filter(function(x){return x.id===row2.id;})[0]||row2; abrirRecibo(vFinal2); }
     }
   });
 }
@@ -1178,6 +1268,49 @@ async function estornarVenda(v){
   if(v.caixa_id) await sb.from("loja_caixa").delete().eq("id",v.caixa_id).eq("loja_id",state.user.id);
   if(v.crediario_id) await sb.from("loja_crediario").delete().eq("id",v.crediario_id).eq("loja_id",state.user.id);
 }
+/* ---------- RECIBO DA VENDA ---------- */
+function descontoPctStr(v){
+  var sub=(v.preco_unit_centavos||0)*(v.quantidade||1);
+  if(!sub||!(v.desconto_centavos>0)) return "0%";
+  var p=(v.desconto_centavos/sub*100);
+  var s=(Math.round(p*10)/10).toFixed(1).replace(".",",");
+  if(s.slice(-2)===",0") s=s.slice(0,-2);
+  return s+"%";
+}
+function statusRecibo(s){ return {pendente:"Pendente",concluida:"Concluída",entregue:"Entregue",cancelada:"Cancelada"}[s]||s||"—"; }
+function reciboRow(k,val){ return '<div class="recibo-row"><span class="k">'+esc(k)+'</span><span class="v">'+esc(val)+'</span></div>'; }
+function reciboHTML(v){
+  var loja=state.loja?state.loja.nome_loja:"Minha loja";
+  var emailLoja=(state.loja&&state.loja.email)||(state.user&&state.user.email)||"";
+  var qtd=v.quantidade||1, unit=v.preco_unit_centavos||0, sub=unit*qtd, desc=v.desconto_centavos||0, total=v.valor_total_centavos||0, pago=v.valor_pago_centavos||0;
+  var h='<div class="recibo"><div class="recibo-head"><div class="r-loja">'+esc(loja)+'</div>'
+    +(emailLoja?'<div class="r-sub">'+esc(emailLoja)+'</div>':"")
+    +'<div class="r-title">RECIBO DE VENDA</div><div class="r-sub">Venda nº '+esc(v.id!=null?v.id:"—")+' • '+fmtDate(v.data_venda||v.created_at)+'</div></div>';
+  h+=reciboRow("Cliente", v.cliente_nome||"—");
+  if(v.contato) h+=reciboRow("Contato", v.contato);
+  h+=reciboRow("Status", statusRecibo(v.status));
+  h+='<div class="recibo-sep"></div>';
+  h+='<div class="recibo-prod">'+esc(v.produto_descricao||"—")+'</div>';
+  h+=reciboRow("Código do estoque", v.codigo_estoque||"—");
+  h+=reciboRow("Quantidade", String(qtd));
+  h+=reciboRow("Preço unitário", brl(unit));
+  h+='<div class="recibo-sep"></div>';
+  h+=reciboRow("Subtotal", brl(sub));
+  if(desc>0){ h+=reciboRow("Desconto (R$)", "− "+brl(desc)); h+=reciboRow("Desconto (%)", descontoPctStr(v)); }
+  else { h+=reciboRow("Desconto", brl(0)+" (0%)"); }
+  h+='<div class="recibo-total"><span>TOTAL</span><span>'+brl(total)+'</span></div>';
+  h+='<div class="recibo-sep"></div>';
+  h+=reciboRow("Forma de pagamento", formaLabel(v.forma_pagamento));
+  h+=reciboRow("Valor pago", brl(pago));
+  if(pago>total) h+=reciboRow("Troco", brl(pago-total));
+  else if(pago<total) h+=reciboRow("Restante a receber", brl(total-pago));
+  h+=reciboRow("Data da venda", fmtDate(v.data_venda||v.created_at));
+  if(v.observacao) h+=reciboRow("Observação", v.observacao);
+  h+='<div class="recibo-foot">Obrigado pela compra!<br/>'+esc(loja)+'</div></div>';
+  return h;
+}
+function abrirRecibo(v){ if(!v) return; $("reciboContent").innerHTML=reciboHTML(v); $("reciboBack").classList.add("open"); }
+
 function vendaCard(v, modo){
   var sub=(v.preco_unit_centavos||0)*(v.quantidade||1);
   return '<div class="row-card"><div class="top"><span class="title">'+esc(v.cliente_nome)+'</span>'+statusPill(v.status)+'<span class="val">'+brl(v.valor_total_centavos)+'</span></div>'
@@ -1185,10 +1318,12 @@ function vendaCard(v, modo){
   +'<div class="meta">'+(sub!==v.valor_total_centavos?'Subtotal '+brl(sub)+(v.desconto_centavos?' • Desconto −'+brl(v.desconto_centavos):"")+' • ':"")+formaLabel(v.forma_pagamento)+' • '+fmtDate(v.data_venda)+(v.valor_pago_centavos?' • Pago '+brl(v.valor_pago_centavos):"")+'</div>'
   +(v.observacao?'<div class="meta">'+esc(v.observacao)+'</div>':"")
   +'<div class="actions">'+sendButtons(v)
+  +((v.status==="concluida"||v.status==="entregue")?'<button class="btn small primary" data-recibo="'+v.id+'">Imprimir / Recibo</button>':"")
   +(modo==="pedido"?'<button class="btn small primary" data-concluir="'+v.id+'">Concluir venda</button><button class="btn small" data-cancelar-venda="'+v.id+'">Cancelar pedido</button>':'<button class="btn small" data-voltar-pendente="'+v.id+'">Voltar p/ pendente</button><button class="btn small" data-cancelar-venda="'+v.id+'">Cancelar venda</button>')
   +'<button class="btn small danger" data-del-venda="'+v.id+'">Excluir</button></div></div>';
 }
 function bindVendaCards(){
+  Array.prototype.forEach.call(document.querySelectorAll("[data-recibo]"),function(b){ b.onclick=function(){ var v=state.vendas.filter(function(x){return x.id==b.getAttribute("data-recibo");})[0]; if(v) abrirRecibo(v); }; });
   Array.prototype.forEach.call(document.querySelectorAll("[data-concluir]"),function(b){ b.onclick=function(){ abrirConcluir(parseInt(b.getAttribute("data-concluir"),10)); }; });
   Array.prototype.forEach.call(document.querySelectorAll("[data-cancelar-venda]"),function(b){ b.onclick=async function(){ var v=state.vendas.filter(function(x){return x.id==b.getAttribute("data-cancelar-venda");})[0]; if(!v) return; if(!(await showConfirm("Cancelar? Se já era venda, o estoque e os lançamentos são estornados."))) return; if(v.status==="concluida"||v.status==="entregue") await estornarVenda(v); if(await upd("loja_vendas", v.id, {status:"cancelada",caixa_id:null,crediario_id:null})){ toast("Cancelado."); loadAll(); } }; });
   Array.prototype.forEach.call(document.querySelectorAll("[data-voltar-pendente]"),function(b){ b.onclick=async function(){ var v=state.vendas.filter(function(x){return x.id==b.getAttribute("data-voltar-pendente");})[0]; if(!v) return; if(!(await showConfirm("Voltar para pendente? O estoque e os lançamentos serão estornados."))) return; await estornarVenda(v); if(await upd("loja_vendas", v.id, {status:"pendente",caixa_id:null,crediario_id:null,valor_pago_centavos:0})){ toast("Voltou para Pedidos."); loadAll(); } }; });
@@ -1259,11 +1394,19 @@ $("concluirForm").addEventListener("submit", async function(ev){
   var forma=$("cfForma").value; var pago=cents($("cfPago").value);
   var ok=await upd("loja_vendas", id, { status:"concluida", forma_pagamento:forma, valor_total_centavos:total, desconto_centavos:desc, valor_pago_centavos:pago });
   if(!ok) return;
-  var v2=Object.assign({}, v, {status:"concluida", forma_pagamento:forma, valor_total_centavos:total, desconto_centavos:desc});
+  var v2=Object.assign({}, v, {status:"concluida", forma_pagamento:forma, valor_total_centavos:total, desconto_centavos:desc, valor_pago_centavos:pago});
   await aplicarEfeitosVenda(v2, pago);
   $("concluirBack").classList.remove("open");
-  state.tab="vendas"; toast("Venda concluída! Estoque baixado e lançamento feito."); loadAll();
+  state.tab="vendas"; toast("Venda concluída! Estoque baixado e lançamento feito.");
+  await loadAll();
+  var vFinal=state.vendas.filter(function(x){return x.id===id;})[0]||v2;
+  abrirRecibo(vFinal);
 });
+
+/* ---------- RECIBO: IMPRIMIR / FECHAR ---------- */
+$("reciboPrintBtn").onclick=function(){ try{ window.print(); }catch(e){ toast("Não foi possível abrir a impressão neste navegador."); } };
+$("reciboCloseBtn").onclick=function(){ $("reciboBack").classList.remove("open"); };
+$("conferirClose").onclick=function(){ $("conferirBack").classList.remove("open"); };
 
 /* ---------- SETUP MODAL ---------- */
 $("setupSql").textContent = SETUP_SQL;
@@ -1276,8 +1419,6 @@ $("dlSqlBtn").onclick=function(){ var blob=new Blob([SETUP_SQL],{type:"text/plai
 /* ---------- INIT ---------- */
 (async function(){
   bindConfirmButtons();
-  if(location.protocol==="file:") $("browserHint").textContent="Arquivo local: abra em um navegador, não na prévia do WhatsApp. Para voltar pelo link de confirmação, o administrador precisa configurar uma URL HTTPS no Supabase. Depois de confirmar, você também pode reabrir este arquivo e usar Entrar.";
-  if(await consumeAuthCallback())return;
   var s = null;
   try{ s = await sb.auth.getSession(); }catch(e){ s = null; }
   if(s && s.data && s.data.session && s.data.session.user){ try{ await enterApp(s.data.session.user); }catch(e){} }
